@@ -75,7 +75,7 @@ class AseCalculation(CalcJob):
         atoms = self.inputs.structure.get_ase()
 
         with folder.open(self._input_aseatoms, 'w') as handle:
-            atoms.write(handle)
+            atoms.write(handle.name)
 
         # ================== prepare the arguments of functions ================
 
