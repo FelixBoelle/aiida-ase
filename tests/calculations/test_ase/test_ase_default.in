@@ -1,6 +1,6 @@
 # This file has been created with AiiDA v. 1.0.0b6
 # If you use AiiDA for publication purposes, please cite:
-# G. Pizzi, A. Cepellotti, R. Sabatini, N. Marzari, and B. Kozinsky,"AiiDA: automated interactive infrastructure and database for computational science", Comp. Mat. Sci 111, 218-230 (2016); https://doi.org/10.1016/j.commatsci.2015.09.013 - http://www.aiida.net.# calculation pk: 15886
+# G. Pizzi, A. Cepellotti, R. Sabatini, N. Marzari, and B. Kozinsky,"AiiDA: automated interactive infrastructure and database for computational science", Comp. Mat. Sci 111, 218-230 (2016); https://doi.org/10.1016/j.commatsci.2015.09.013 - http://www.aiida.net.# calculation pk: 5
 
 import ase
 import ase.io
@@ -21,11 +21,12 @@ atoms = ase.io.read('aiida_atoms.json')
 calculator = custom_calculator(mode=PW(ecut=300), kpts=(2,2,2))
 atoms.set_calculator(calculator)
 
+
 optimizer = custom_optimizer(atoms, alpha=0.9)
 optimizer.run(fmax=0.05)
 
 results = {}
-results['total_energy'] = atoms.get_total_energy()
+results['potential_energy'] = atoms.get_potential_energy()
 results['temperature'] = atoms.get_temperature()
 results['forces'] = atoms.get_forces(apply_constraint=True)
 results['masses'] = atoms.get_masses()
