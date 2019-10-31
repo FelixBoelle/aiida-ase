@@ -66,9 +66,6 @@ class AseCalculation(CalcJob):
         else:
             settings = {}
 
-        # default atom setter: no set method as default
-        default_atoms_setters = []
-
         # default atom getter: I will always retrieve the total potential at least
         default_atoms_getters = [["potential_energy", ""]]
 
@@ -422,7 +419,6 @@ def convert_the_args(raw_args):
     """
     Function used to convert the arguments of methods
     """
-    print(raw_args)
     if not raw_args:
         return ""
     if isinstance(raw_args,dict):
