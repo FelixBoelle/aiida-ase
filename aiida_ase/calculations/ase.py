@@ -66,8 +66,11 @@ class AseCalculation(CalcJob):
         else:
             settings = {}
 
-        # default atom getter: I will always retrieve the total energy at least
-        default_atoms_getters = [["total_energy", ""]]
+        # default atom setter: no set method as default
+        default_atoms_setters = []
+
+        # default atom getter: I will always retrieve the total potential at least
+        default_atoms_getters = [["potential_energy", ""]]
 
         # ================================
 
@@ -161,6 +164,10 @@ class AseCalculation(CalcJob):
                                                " in the KpointsData")
                 calc_argsstr = ", ".join( [calc_argsstr] + ["kpts=({},{},{})".format( *mesh )] )
 
+        # =============== prepare the methods of atoms.set(), to save results
+
+        atoms_setters = convert_the_setters(parameters_dict.pop("atoms_setters", []))
+
         # =============== prepare the methods of atoms.get(), to save results
 
         atoms_getters = default_atoms_getters + convert_the_getters(parameters_dict.pop("atoms_getters", []))
@@ -224,6 +231,12 @@ class AseCalculation(CalcJob):
         input_txt += "\n"
         input_txt += "calculator = custom_calculator({})\n".format(calc_argsstr)
         input_txt += "atoms.set_calculator(calculator)\n"
+        input_txt += "\n"
+
+        # set additional properties using the setter
+        for setter,setter_args in atoms_setters:
+            input_txt += "atoms.set_{}({})\n".format(setter,
+                                                     setter_args)
         input_txt += "\n"
 
         if optimizer is not None:
@@ -398,10 +411,18 @@ def convert_the_getters(getters):
         return_list.append( (method_name, out_args) )
     return return_list
 
+def convert_the_setters(setters):
+    """
+    Function to prepare the arguments of atoms set methods
+    """
+    return_list = convert_the_getters(setters)
+    return return_list
+
 def convert_the_args(raw_args):
     """
     Function used to convert the arguments of methods
     """
+    print(raw_args)
     if not raw_args:
         return ""
     if isinstance(raw_args,dict):
