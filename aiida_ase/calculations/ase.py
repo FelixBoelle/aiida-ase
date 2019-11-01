@@ -102,10 +102,10 @@ class AseCalculation(CalcJob):
             # prepare the import string
             optimizer_import_string = get_optimizer_impstr(optimizer_name)
 
-        # ================= determine the calculator name and its import ====
+        # ================= determine the calculator name for import ===========
 
         calculator = parameters_dict.pop("calculator", {})
-        calculator_import_string = get_calculator_impstr(calculator.pop("name", None))
+        calculator_name = calculator.pop("name", None)
 
         # =================== prepare the arguments for the calculator call
 
@@ -175,7 +175,8 @@ class AseCalculation(CalcJob):
 
         # ===================== build the strings with the module imports
 
-        all_imports = ["import ase", 'import ase.io', "import json", "import numpy", calculator_import_string]
+        all_imports = ["import ase", 'import ase.io', "import json", "import numpy",
+                       "from ase.calculators.calculator import get_calculator"]
 
         if optimizer is not None:
             all_imports.append(optimizer_import_string)
@@ -226,6 +227,7 @@ class AseCalculation(CalcJob):
 
         input_txt += "atoms = ase.io.read('{}')\n".format(self._input_aseatoms)
         input_txt += "\n"
+        input_txt += "custom_calculator = get_calculator('{}')\n".format(calculator_name.lower())
         input_txt += "calculator = custom_calculator({})\n".format(calc_argsstr)
         input_txt += "atoms.set_calculator(calculator)\n"
         input_txt += "\n"
@@ -321,43 +323,6 @@ class AseCalculation(CalcJob):
         # and executing python if in serial
 
         return calcinfo
-
-def get_calculator_impstr(calculator_name):
-    """
-    Returns the import string for the calculator
-    """
-    if calculator_name.lower() == "gpaw" or calculator_name is None:
-        return "from gpaw import GPAW as custom_calculator"
-    elif calculator_name.lower() == "espresso":
-        return "from espresso import espresso as custom_calculator"
-    else:
-        possibilities = {"abinit":"abinit.Abinit",
-                         "aims":"aims.Aims",
-                         "ase_qmmm_manyqm":"AseQmmmManyqm",
-                         "castep":"Castep",
-                         "dacapo":"Dacapo",
-                         "dftb":"Dftb",
-                         "eam":"EAM",
-                         "elk":"ELK",
-                         "emt":"EMT",
-                         "exciting":"Exciting",
-                         "fleur":"FLEUR",
-                         "gaussian":"Gaussian",
-                         "gromacs":"Gromacs",
-                         "mopac":"Mopac",
-                         "morse":"MorsePotential",
-                         "nwchem":"NWChem",
-                         'siesta':"Siesta",
-                         "tip3p":"TIP3P",
-                         "turbomole":"Turbomole",
-                         "vasp":"Vasp",
-                         }
-
-        current_val = possibilities.get(calculator_name.lower())
-
-        package, class_name = (calculator_name,current_val) if current_val else calculator_name.rsplit('.',1)
-
-        return "from ase.calculators.{} import {} as custom_calculator".format(package, class_name)
 
 def get_optimizer_impstr(optimizer_name):
     """
